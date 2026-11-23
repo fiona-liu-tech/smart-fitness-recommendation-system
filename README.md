@@ -38,6 +38,22 @@ My main contribution was the data science and machine learning component of the 
 
 The project analysed fitness user profiles and connected machine learning-based fitness profiling with a rule-based meal recommendation system.
 
+## Model Evaluation
+
+The notebook compares four regression models for estimating calories
+burned during a workout.
+
+| Model | R² | RMSE (kcal) |
+| --- | ---: | ---: |
+| Random Forest Regression | 0.18 | 273.74 |
+| kNN Regression | 0.17 | 275.36 |
+| Multiple Linear Regression | 0.12 | 283.40 |
+| Degree-2 Polynomial Regression | 0.08 | 290.79 |
+
+Random forest recorded the lowest RMSE in this comparison, narrowly
+ahead of kNN. With an R² of 0.18, the predictions are best interpreted
+as rough estimates.
+
 ## Note
 
 This repository is a portfolio version of a group academic project. Some materials may have been simplified or reorganised for presentation purposes.
