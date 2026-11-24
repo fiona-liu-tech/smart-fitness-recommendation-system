@@ -1,59 +1,48 @@
-# smart-fitness-recommendation-system
-Machine learning project for smart fitness and meal recommendation.
+# Smart Fitness & Meal Recommendation System
 
-This is a machine learning project developed. The project aims to build a smart fitness and meal recommendation system by analysing user fitness data and generating personalised recommendations.
+A machine learning portfolio project with an interactive web app that
+estimates calories burned during a workout and suggests meals based on
+the estimate, fitness profile, and dietary preferences.
+
+[App source and local setup instructions](Smart_Fitness_App/README.md)
+
+## What the App Does
+
+- Estimates workout calorie expenditure from inputs such as workout type,
+  duration, heart rate, and self-reported training experience.
+- Uses a two-cluster K-means model to assign a fitness profile.
+- Suggests up to five meals and displays their calories, protein,
+  carbohydrates, and fat. Users can filter by diet, meal type, and cuisine.
+
+The app uses FastAPI for the backend and HTML, CSS, and JavaScript for
+the interface. The Jupyter notebook documents the data preparation,
+exploratory analysis, and model comparison.
 
 ## My Contribution
 
-My main contribution was the data science and machine learning component of the project. I worked on data cleaning, dataset integration, missing value handling, BMI consistency checks, feature engineering, model testing, clustering, and connecting fitness profiles with meal recommendation logic.
-
-## Methods Used
-
-- Data cleaning and preprocessing
-- Feature engineering
-- Regression
-- k-Nearest Neighbours (kNN)
-- Random Forest
-- K-Means clustering
-- Rule-based recommendation logic
-- Model evaluation using R² and RMSE
-
-## Engineered Features
-
-- Session duration
-- BMI
-- BPM increase
-- MET
-
-## Tools and Technologies
-
-- Python
-- Jupyter Notebook
-- Pandas
-- NumPy
-- Scikit-learn
-- Matplotlib
-
-## Project Outcome
-
-The project analysed fitness user profiles and connected machine learning-based fitness profiling with a rule-based meal recommendation system.
+This portfolio project extends a group coursework project. My main
+contribution was the data science and machine learning work. I cleaned
+and combined two workout datasets, checked BMI consistency, engineered
+features such as heart-rate increase and session duration in minutes,
+compared regression models, and linked fitness profiles to rule-based
+meal recommendations.
 
 ## Model Evaluation
 
-The notebook compares four regression models for estimating calories
-burned during a workout.
-
-| Model | R² | RMSE (kcal) |
+| Regression model | Test R² | Test RMSE (kcal) |
 | --- | ---: | ---: |
-| Random Forest Regression | 0.18 | 273.74 |
-| kNN Regression | 0.17 | 275.36 |
-| Multiple Linear Regression | 0.12 | 283.40 |
-| Degree-2 Polynomial Regression | 0.08 | 290.79 |
+| Random forest | 0.18 | 273.74 |
+| k-nearest neighbours | 0.17 | 275.36 |
+| Multiple linear regression | 0.12 | 283.40 |
+| Degree-2 polynomial regression | 0.08 | 290.79 |
 
-Random forest recorded the lowest RMSE in this comparison, narrowly
-ahead of kNN. With an R² of 0.18, the predictions are best interpreted
-as rough estimates.
+Random forest had the lowest test RMSE and was selected for the app.
+Its test R² of 0.18 indicates limited predictive performance, so the app
+presents calorie predictions as rough estimates.
 
-## Note
+## Run Locally
 
-This repository is a portfolio version of a group academic project. Some materials may have been simplified or reorganised for presentation purposes.
+Open the `Smart_Fitness_App` folder and follow the
+[setup instructions](Smart_Fitness_App/README.md). Once the server starts,
+open `http://127.0.0.1:8000` and click **Get recommendations** to try the
+pre-filled example.
