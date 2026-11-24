@@ -1,0 +1,172 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Smart Fitness & Meal Planner</title>
+<style>
+:root{font:16px system-ui,sans-serif;color:#edf0f8;background:#10121b;color-scheme:dark;--muted:#aab0c2;--line:#333747;--accent:#ff596d}
+*{box-sizing:border-box}body{margin:0}main{display:grid;grid-template-columns:minmax(230px,290px) minmax(0,1fr);min-height:100vh}
+.controls{background:#1c1f2b;border-right:1px solid var(--line);padding:28px 22px}
+.dashboard{padding:clamp(22px,5vw,68px);max-width:1250px}
+h1{font-size:clamp(1.55rem,3vw,2.3rem);margin:0 0 8px}h2{font-size:1.2rem;margin:0 0 16px}h3{margin:30px 0 10px}
+.dashboard::before{content:"";display:block;width:70px;height:4px;border-radius:8px;background:var(--accent);margin-bottom:20px}
+.intro,small,.metric-label{color:var(--muted)}.intro{margin:0 0 28px}
+.fields{display:grid;gap:13px}
+label{display:grid;gap:5px;font-size:.88rem;font-weight:600}
+input,select,button{font:inherit;min-width:0}input[type=range]{width:100%;margin:0;accent-color:var(--accent)}
+select{padding:8px;border:1px solid var(--line);border-radius:6px;background:#10121b;color:inherit}
+output{color:#ff8997;font-variant-numeric:tabular-nums}
+button{margin-top:18px;width:100%;padding:10px;background:var(--accent);color:#171019;border:0;border-radius:6px;font-weight:750;cursor:pointer}button:disabled{opacity:.65}
+#results{min-width:0}#error{color:#ff8997}
+.metrics{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}.metric-label{font-size:.82rem;margin:0 0 6px}.metric-value{margin:0;font-size:1.2rem;font-weight:700}.estimate{font-size:1.65rem}.profile{display:inline-block;background:#17392d;color:#9aebbd;padding:8px;border-radius:6px;font-size:.93rem}
+.table-wrap{overflow:auto;border:1px solid var(--line);border-radius:6px}table{width:100%;border-collapse:collapse;white-space:nowrap;font-size:.84rem}th,td{text-align:left;padding:9px;border-bottom:1px solid var(--line)}th{background:#222634;color:#d0d5e3}tbody tr:last-child td{border-bottom:0}
+details{margin-top:22px;padding:10px;border:1px solid var(--line);border-radius:6px}summary{cursor:pointer}small{display:block;margin-top:14px}
+@media(max-width:700px){main{grid-template-columns:1fr}.controls{border-right:0;border-bottom:1px solid var(--line)}.fields{grid-template-columns:repeat(2,minmax(0,1fr))}.metrics{grid-template-columns:repeat(2,minmax(0,1fr))}}
+</style>
+<main>
+<section class="controls">
+<h2>Workout Information</h2>
+<form id="workout">
+<div class="fields">
+<label><span>Age · <output for="age">30</output></span><input id=age name="age" type="range" min="18" max="59" value="30"></label>
+<label>Gender used by model<select name="gender"><option>Female</option><option>Male</option></select></label>
+<label><span>Weight (kg) · <output for="weight">70</output></span><input id=weight name="weight" type="range" min="40" max="130" step="0.1" value="70"></label>
+<label><span>Height (m) · <output for="height">1.70</output></span><input id=height name="height" type="range" min="1.5" max="2" step="0.01" value="1.70"></label>
+<label>Workout type<select name="workout"><option>Cardio</option><option>Strength</option><option>Yoga</option><option>HIIT</option></select></label>
+<label><span>Duration (min) · <output for="duration">60</output></span><input id=duration name="duration" type="range" min="15" max="120" value="60"></label>
+<label><span>Resting heart rate (bpm) · <output for="resting_bpm">65</output></span><input id=resting_bpm name="resting_bpm" type="range" min="40" max="100" value="65"></label>
+<label><span>Average heart rate (bpm) · <output for="avg_bpm">145</output></span><input id=avg_bpm name="avg_bpm" type="range" min="80" max="195" value="145"></label>
+<label><span>Maximum heart rate (bpm) · <output for="max_bpm">170</output></span><input id=max_bpm name="max_bpm" type="range" min="90" max="205" value="170"></label>
+<label><span>Body fat (%) · <output for="fat">25</output></span><input id=fat name="fat" type="range" min="8" max="45" step="0.1" value="25"></label>
+<label><span>Workouts per week · <output for="frequency">3</output></span><input id=frequency name="frequency" type="range" min="1" max="7" value="3"></label>
+<label>Training experience (self-reported)<select name="experience"><option value="1">Beginner</option><option value="2" selected>Intermediate</option><option value="3">Advanced</option></select></label>
+</div>
+<h3>Meal preferences</h3>
+<div class="fields">
+<label>Diet<select name="diet_type"><option value="Autofill">Any diet</option></select></label>
+<label>Meal type<select name="meal_type"><option value="Autofill">Any meal type</option></select></label>
+<label>Cuisine<select name="cuisine"><option value="Autofill">Any cuisine</option></select></label>
+</div>
+<button type="submit">Get recommendations</button>
+<p id="error" role="alert" hidden></p>
+</form>
+</section>
+<section class="dashboard">
+<h1>Smart Fitness &amp; Meal Planner</h1>
+<p class="intro">Estimate workout calories and find meals that match your preferences.</p>
+<h2>Prediction Results</h2>
+<div id="results" aria-live="polite"><p>Submit the sample workout or enter your own details.</p></div>
+<small id="model"></small>
+<small>Estimates are approximate. Meal suggestions are for demonstration and do not account for food allergies.</small>
+</section>
+</main>
+<script>
+const form = document.querySelector('#workout');
+const results = document.querySelector('#results');
+const error = document.querySelector('#error');
+const button = form.querySelector('button');
+for (const slider of form.querySelectorAll('input[type=range]')) {
+  slider.addEventListener('input', () => {
+    slider.parentElement.querySelector('output').textContent = slider.value;
+  });
+}
+
+async function loadOptions() {
+  try {
+    const response = await fetch('/api/options');
+    if (!response.ok) throw new Error('Could not load meal filters.');
+    const {filters, scores} = await response.json();
+    for (const [field, values] of Object.entries(filters)) {
+      for (const value of values) form.elements[field].add(new Option(value, value));
+    }
+    document.querySelector('#model').textContent =
+      `Random forest test performance · R² ${scores.r2} · RMSE ${scores.rmse} kcal`;
+  } catch (failure) {
+    error.textContent = failure.message;
+    error.hidden = false;
+  }
+}
+
+function writeResult(container, tag, value, className = '') {
+  const element = document.createElement(tag);
+  element.className = className;
+  element.textContent = value;
+  container.append(element);
+}
+
+form.addEventListener('submit', async (event) => {
+  event.preventDefault();
+  error.hidden = true;
+  button.disabled = true;
+  results.textContent = 'Calculating your estimate…';
+  try {
+    const inputs = Object.fromEntries(new FormData(form));
+    const response = await fetch('/api/recommend', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify(inputs)
+    });
+    const data = await response.json();
+    if (!response.ok) {
+      throw new Error(typeof data.detail === 'string' ? data.detail : 'Check the workout values and try again.');
+    }
+    results.replaceChildren();
+    const metrics = document.createElement('div');
+    metrics.className = 'metrics';
+    for (const [label, value, style] of [
+      ['Predicted calories burned', `${data.calories} kcal`, 'estimate'],
+      ['Burn level', data.burn, ''],
+      ['Fitness profile', data.profile, 'profile']
+    ]) {
+      const metric = document.createElement('div');
+      writeResult(metric, 'p', label, 'metric-label');
+      writeResult(metric, 'p', value, `metric-value ${style}`);
+      metrics.append(metric);
+    }
+    results.append(metrics);
+    const details = document.createElement('details');
+    writeResult(details, 'summary', 'View model input summary');
+    const inputList = document.createElement('ul');
+    for (const [name, value] of Object.entries(inputs)) {
+      const field = form.elements[name];
+      const label = field.closest('label').firstChild.textContent.split(' · ')[0];
+      writeResult(inputList, 'li', `${label}: ${field.selectedOptions?.[0]?.textContent ?? value}`);
+    }
+    details.append(inputList);
+    results.append(details);
+
+    writeResult(results, 'h3', 'Recommended Healthy Meals');
+    if (!data.meals.length) {
+      writeResult(results, 'p', 'No meals match these preferences. Try relaxing a filter.');
+      return;
+    }
+    const columns = [
+      ['Meal', 'meal_name'], ['Cuisine', 'cuisine'], ['Meal type', 'meal_type'],
+      ['Diet', 'diet_type'], ['Calories (kcal)', 'calories'], ['Protein (g)', 'protein_g'],
+      ['Carbs (g)', 'carbs_g'], ['Fat (g)', 'fat_g'], ['Category', 'Meal_Category']
+    ];
+    const wrapper = document.createElement('div');
+    wrapper.className = 'table-wrap';
+    wrapper.tabIndex = 0;
+    wrapper.setAttribute('aria-label', 'Meal recommendations');
+    const table = document.createElement('table');
+    const heading = table.createTHead().insertRow();
+    for (const [label] of columns) writeResult(heading, 'th', label);
+    const body = table.createTBody();
+    for (const meal of data.meals) {
+      const row = body.insertRow();
+      for (const [, key] of columns) writeResult(row, 'td', meal[key]);
+    }
+    wrapper.append(table);
+    results.append(wrapper);
+  } catch (failure) {
+    results.textContent = 'Update your details and submit again.';
+    error.textContent = failure.message;
+    error.hidden = false;
+  } finally {
+    button.disabled = false;
+  }
+});
+loadOptions();
+</script>
+</html>
